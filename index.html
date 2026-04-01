@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>iTabs | What Is iTabs?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-tertiary: #1e1e2e;
+            --text-primary: #ffffff; --text-secondary: #9090b0;
+            --accent: #7c3aed; --accent2: #06b6d4; --i-button: #f59e0b;
+            --card-radius: 16px; --transition: 0.2s ease;
+        }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.5; }
+        .container { max-width: 430px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; position: relative; }
+
+        /* Progress bar */
+        .progress-container { display: flex; gap: 4px; padding: 12px 16px 8px; position: absolute; top: 0; left: 0; right: 0; z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+        .progress-segment { flex: 1; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; transition: background var(--transition); }
+        .progress-segment.viewed { background: rgba(255,255,255,0.6); }
+        .progress-segment.active { background: var(--accent); }
+
+        /* Cards */
+        .cards-wrapper { flex: 1; position: relative; overflow: hidden; }
+        .card { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; transform: translateX(100%); transition: all 0.3s ease; pointer-events: none; }
+        .card.active { opacity: 1; transform: translateX(0); pointer-events: all; }
+        .card.prev { opacity: 0; transform: translateX(-100%); }
+
+        /* Hero */
+        .card-hero { padding: 52px 20px 20px; min-height: 38%; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; }
+        .hero-default { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        .hero-purple  { background: linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%); }
+        .hero-cyan    { background: linear-gradient(135deg, #164e63 0%, #0c4a6e 100%); }
+        .hero-amber   { background: linear-gradient(135deg, #78350f 0%, #431407 100%); }
+        .hero-green   { background: linear-gradient(135deg, #14532d 0%, #052e16 100%); }
+        .hero-red     { background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%); }
+
+        .hero-photo { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.35; }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 100%); }
+        .hero-content { position: relative; z-index: 1; }
+
+        .card-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; }
+        .tag-purple { color: #a78bfa; } .tag-cyan { color: #67e8f9; } .tag-amber { color: #fcd34d; } .tag-green { color: #6ee7b7; } .tag-red { color: #fca5a5; }
+        .card-headline { font-size: clamp(20px, 5vw, 26px); font-weight: 700; line-height: 1.25; }
+        .hero-default em { color: #cbd5e1; font-style: normal; }
+        .hero-purple  em { color: #a78bfa; font-style: normal; }
+        .hero-cyan    em { color: #67e8f9; font-style: normal; }
+        .hero-amber   em { color: #fcd34d; font-style: normal; }
+        .hero-green   em { color: #6ee7b7; font-style: normal; }
+        .hero-red     em { color: #fca5a5; font-style: normal; }
+
+        /* Body */
+        .card-body { flex: 1; padding: 20px; background: var(--bg-secondary); overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .card-summary { font-size: 15px; color: var(--text-secondary); line-height: 1.7; }
+        .analogy-box { background: var(--bg-tertiary); border-radius: 12px; padding: 14px 16px; border-left: 3px solid var(--accent2); }
+        .analogy-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2); margin-bottom: 6px; }
+        .analogy-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .i-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+        .i-button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); border-radius: 20px; color: var(--i-button); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition); }
+        .i-button:hover { background: rgba(245,158,11,0.22); }
+        .i-dot { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background: var(--i-button); border-radius: 50%; color: #000; font-size: 10px; font-weight: 800; font-style: italic; flex-shrink: 0; }
+
+        /* Nav */
+        .nav-area { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 20px; background: var(--bg-secondary); border-top: 1px solid rgba(255,255,255,0.06); }
+        .nav-btn { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none; color: var(--text-primary); font-size: 18px; cursor: pointer; transition: all var(--transition); display: flex; align-items: center; justify-content: center; }
+        .nav-btn:disabled { opacity: 0.25; cursor: default; }
+        .nav-btn:not(:disabled):hover { background: rgba(255,255,255,0.15); }
+        .card-counter { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+
+        /* Floating contact button */
+        .contact-fab { position: absolute; bottom: 86px; right: 16px; z-index: 150; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .contact-pill { width: 48px; height: 48px; border-radius: 50%; background: rgba(124,58,237,0.8); border: 1px solid rgba(167,139,250,0.5); color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 24px rgba(124,58,237,0.45); transition: all 0.2s ease; }
+        .contact-pill.open { background: rgba(124,58,237,0.95); }
+        .contact-links { display: flex; flex-direction: column; gap: 8px; width: 220px; transition: opacity 0.2s, transform 0.2s; }
+        .contact-links.hidden { opacity: 0; transform: translateY(12px); pointer-events: none; }
+        .contact-links.visible { opacity: 1; transform: translateY(0); pointer-events: all; }
+        .contact-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; font-size: 13px; font-weight: 600; text-decoration: none; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+        .contact-link.email    { background: #fff8f0; border: 1px solid #fde8c8; color: #92400e; }
+        .contact-link.whatsapp { background: #f0fdf4; border: 1px solid #bbf7d0; color: #14532d; }
+        .contact-link.web      { background: #f0feff; border: 1px solid #a5f3fc; color: #164e63; }
+        .contact-link.quote    { background: #fffbeb; border: 1px solid #fcd34d; color: #78350f; }
+        .contact-link-icon { font-size: 17px; }
+        .contact-backdrop { position: absolute; inset: 0; z-index: 140; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity var(--transition); z-index: 200; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-sheet { width: 100%; max-width: 430px; margin: 0 auto; background: var(--bg-tertiary); border-radius: 20px 20px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s ease; }
+        .modal-overlay.active .modal-sheet { transform: translateY(0); }
+        .modal-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 0 auto 16px; }
+        .modal-term { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+        .modal-type { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--i-button); margin-bottom: 12px; }
+        .modal-content { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .modal-close { margin-top: 20px; width: 100%; padding: 12px; background: rgba(255,255,255,0.08); border: none; border-radius: 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="progress-container" id="progress"></div>
+    <div class="cards-wrapper" id="cardsWrapper"></div>
+    <div class="nav-area">
+        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">←</button>
+        <span class="card-counter" id="counter">1 / N</span>
+        <button class="nav-btn" id="nextBtn" onclick="navigate(1)">→</button>
+    </div>
+
+    <!-- Floating contact button -->
+    <div class="contact-fab" id="contactFab">
+        <div class="contact-links hidden" id="contactLinks">
+            <a href="mailto:build@itabs.ai" target="_blank" class="contact-link email"><span class="contact-link-icon">✉️</span>Email Us</a>
+            <a href="https://wa.me/61400000000" target="_blank" class="contact-link whatsapp"><span class="contact-link-icon">💬</span>WhatsApp</a>
+            <a href="https://itabs.ai" target="_blank" class="contact-link web"><span class="contact-link-icon">🌐</span>itabs.ai</a>
+            <a href="https://itabs.ai/fencing.html" target="_blank" class="contact-link quote"><span class="contact-link-icon">⚡</span>Get a Quote Widget</a>
+        </div>
+        <button class="contact-pill" id="contactPill" onclick="toggleContact()">💬</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-term" id="modalTerm"></div>
+        <div class="modal-type" id="modalType"></div>
+        <div class="modal-content" id="modalContent"></div>
+        <button class="modal-close" onclick="closeModal()">Got it — close</button>
+    </div>
+</div>
+
+<script>
+const cards = [
+    {
+        tag: "01 / INTRO", tagClass: "", heroClass: "hero-default",
+        heroPhoto: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&auto=format&fit=crop",
+        headline: "Nobody Reads Your <em>Wall of Text</em>",
+        summary: "You worked hard on that content — your bio, your services, your story. But people are on their phones, scrolling fast, and a wall of text gets skipped every time. iTabs breaks your content into swipeable cards so people actually read it.",
+        analogy: { title: "Think of it like…", text: "Instagram Stories — but for your business. Each card is one idea, one moment of attention. Swipe to go deeper." },
+        iButtons: [
+            { label: "What is iTabs?", type: "definition", term: "iTabs", content: "iTabs is a platform that turns structured content into swipeable HTML card widgets. Each widget is a single file — no app, no login, no server. Just tap a link and it loads instantly on any phone." }
+        ]
+    },
+    {
+        tag: "02 / THE MECHANIC", tagClass: "tag-cyan", heroClass: "hero-purple",
+        heroPhoto: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&auto=format&fit=crop",
+        headline: "Swipe Through <em>One Idea at a Time</em>",
+        summary: "Every iTabs widget is a deck of cards. Each card has one headline, one key message, and optional i-buttons for deeper context. You control the pace — swipe left or right, or tap the arrows. The progress bar at the top shows where you are.",
+        analogy: null,
+        iButtons: [
+            { label: "Progress bar", type: "definition", term: "Progress Bar", content: "The coloured segments at the very top of this widget. Purple = current card. White = cards you've already seen. Updates live as you swipe." },
+            { label: "Why one idea?", type: "why-it-matters", term: "Single-idea cards", content: "Cognitive load research shows people remember information better when it's broken into small, focused chunks. One card = one idea = one moment of genuine comprehension." }
+        ]
+    },
+    {
+        tag: "03 / I-BUTTONS", tagClass: "tag-cyan", heroClass: "hero-cyan",
+        heroPhoto: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop",
+        headline: "Tap the <em>Amber Pills</em> to Go Deeper",
+        summary: "See those amber buttons? They're called i-buttons — the 'i' stands for information. Each one opens a bottom-sheet modal with extra context, a definition, or a related concept.",
+        analogy: { title: "Think of it like…", text: "Footnotes — but ones that actually get read. The main card flows, and i-buttons sit quietly at the bottom for curious readers who want more." },
+        iButtons: [
+            { label: "Bottom-sheet modal", type: "definition", term: "Bottom-Sheet Modal", content: "The overlay panel that slides up from the bottom when you tap an i-button. It sits on top of the card without navigating away. Tap outside it or press close to dismiss." },
+            { label: "Why amber?", type: "context", term: "Amber colour", content: "Amber was chosen deliberately — warm, attention-grabbing without being alarming, and universally distinct from the purple and cyan used in card design." }
+        ]
+    },
+    {
+        tag: "04 / DESIGN SYSTEM", tagClass: "tag-amber", heroClass: "hero-amber",
+        heroPhoto: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&auto=format&fit=crop",
+        headline: "Dark Theme. <em>Zero Dependencies.</em> One File.",
+        summary: "Every iTabs widget shares the same design DNA — dark background, Inter typeface, six hero gradient themes. The whole widget is a single self-contained HTML file. No frameworks, no CDN calls, no build tools.",
+        analogy: null,
+        iButtons: [
+            { label: "The six themes", type: "definition", term: "Hero Gradient Themes", content: "Each card picks one of six hero gradients: default (dark slate), purple (deep violet), cyan (ocean blue), amber (burnt orange), green (forest), red (warning)." },
+            { label: "Single HTML file", type: "why-it-matters", term: "Zero Dependencies", content: "Because it's one plain HTML file, an iTabs widget loads instantly, works offline, embeds anywhere, and deploys to GitHub Pages for free. You get a URL and share it." }
+        ]
+    },
+    {
+        tag: "05 / USE CASES", tagClass: "tag-green", heroClass: "hero-green",
+        heroPhoto: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop",
+        headline: "Built for <em>Tradies, Founders & Creators</em>",
+        summary: "A tradie shares an iTabs quote estimator in WhatsApp. A founder puts an iTabs deck at the top of their Substack post. A business replaces a PDF brochure with a swipeable link. The format works wherever a link works.",
+        analogy: null,
+        iButtons: [
+            { label: "Quote estimator", type: "context", term: "Quote Estimator Widget", content: "Cards walk a customer through a job — size, complexity, extras — then a final card captures their name, phone, and email. The lead goes straight to the tradie's inbox." },
+            { label: "Substack use case", type: "context", term: "iTabs on Substack", content: "The iTabs Substack at itabs.substack.com puts a live widget at the top of every post. The widget IS the demo, not a screenshot of one." }
+        ]
+    },
+    {
+        tag: "06 / GET STARTED", tagClass: "tag-green", heroClass: "hero-green",
+        heroPhoto: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&auto=format&fit=crop",
+        headline: "You Just Experienced <em>What iTabs Does</em>",
+        summary: "This card deck you just swiped through? That's an iTabs widget. Send a brief to build@itabs.ai and an AI pipeline assembles your widget and replies with a live link. Free tier gets you started. Paid tier adds your branding.",
+        analogy: null,
+        iButtons: [
+            { label: "How to get one", type: "definition", term: "iTabs Builder", content: "Email build@itabs.ai with the subject 'iTabs Widget Brief'. The Builder calls Claude AI, builds the HTML, deploys it, and replies with a live URL — usually under 2 minutes." },
+            { label: "Pricing", type: "context", term: "Free vs Paid", content: "Free tier: auto-built widget with iTabs branding and basic lead capture. Paid (~$29/month): your logo, brand colours, photos, WhatsApp button, QR code, and visit stats." }
+        ]
+    }
+];
+
+let currentCard = 0;
+let contactOpen = false;
+const totalCards = cards.length;
+
+function init() {
+    const progress = document.getElementById('progress');
+    const wrapper = document.getElementById('cardsWrapper');
+    cards.forEach((card, i) => {
+        const seg = document.createElement('div');
+        seg.className = 'progress-segment' + (i === 0 ? ' active' : '');
+        progress.appendChild(seg);
+        wrapper.appendChild(buildCard(card, i));
+    });
+    document.getElementById('counter').textContent = `1 / ${totalCards}`;
+    document.getElementById('prevBtn').disabled = true;
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') navigate(1);
+        if (e.key === 'ArrowLeft') navigate(-1);
+        if (e.key === 'Escape') { closeModal(); closeContact(); }
+    });
+    let startX = 0;
+    const cw = document.getElementById('cardsWrapper');
+    cw.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+    cw.addEventListener('touchend', e => {
+        const diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) { navigate(diff > 0 ? 1 : -1); closeContact(); }
+    });
+}
+
+function buildCard(card, index) {
+    const el = document.createElement('div');
+    el.className = 'card' + (index === 0 ? ' active' : '');
+    const photoHTML = card.heroPhoto
+        ? `<div class="hero-photo" style="background-image:url('${card.heroPhoto}')"></div><div class="hero-overlay"></div>`
+        : '';
+    const analogyHTML = card.analogy
+        ? `<div class="analogy-box"><div class="analogy-title">${card.analogy.title}</div><div class="analogy-text">${card.analogy.text}</div></div>`
+        : '';
+    const iButtonsHTML = card.iButtons.length
+        ? `<div class="i-buttons">${card.iButtons.map(b => `<button class="i-button" data-term="${b.term}" data-type="${b.type}" data-content="${encodeURIComponent(b.content)}"><span class="i-dot">i</span>${b.label}</button>`).join('')}</div>`
+        : '';
+    el.innerHTML = `
+        <div class="card-hero ${card.heroClass}">
+            ${photoHTML}
+            <div class="hero-content">
+                <div class="card-tag ${card.tagClass || ''}">${card.tag}</div>
+                <h2 class="card-headline">${card.headline}</h2>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="card-summary">${card.summary}</p>
+            ${analogyHTML}
+            ${iButtonsHTML}
+        </div>`;
+    el.querySelectorAll('.i-button').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            openModal(btn.dataset.term, btn.dataset.type, decodeURIComponent(btn.dataset.content));
+        });
+    });
+    return el;
+}
+
+function navigate(direction) {
+    const next = currentCard + direction;
+    if (next >= 0 && next < totalCards) updateCard(next);
+}
+
+function updateCard(index) {
+    document.querySelectorAll('.card').forEach((c, i) => {
+        c.classList.remove('active', 'prev');
+        if (i === index) c.classList.add('active');
+        else if (i < index) c.classList.add('prev');
+    });
+    document.querySelectorAll('.progress-segment').forEach((s, i) => {
+        s.classList.remove('active', 'viewed');
+        if (i === index) s.classList.add('active');
+        else if (i < index) s.classList.add('viewed');
+    });
+    currentCard = index;
+    document.getElementById('counter').textContent = `${index + 1} / ${totalCards}`;
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalCards - 1;
+}
+
+function toggleContact() {
+    contactOpen = !contactOpen;
+    const links = document.getElementById('contactLinks');
+    const pill = document.getElementById('contactPill');
+    links.className = 'contact-links ' + (contactOpen ? 'visible' : 'hidden');
+    pill.className = 'contact-pill ' + (contactOpen ? 'open' : '');
+    pill.textContent = contactOpen ? '✕' : '💬';
+
+    // backdrop
+    let backdrop = document.getElementById('contactBackdrop');
+    if (contactOpen) {
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.id = 'contactBackdrop';
+            backdrop.className = 'contact-backdrop';
+            backdrop.onclick = closeContact;
+            document.querySelector('.container').appendChild(backdrop);
+        }
+    } else {
+        if (backdrop) backdrop.remove();
+    }
+}
+
+function closeContact() {
+    if (!contactOpen) return;
+    contactOpen = false;
+    document.getElementById('contactLinks').className = 'contact-links hidden';
+    const pill = document.getElementById('contactPill');
+    pill.className = 'contact-pill';
+    pill.textContent = '💬';
+    const backdrop = document.getElementById('contactBackdrop');
+    if (backdrop) backdrop.remove();
+}
+
+function openModal(term, type, content) {
+    const typeLabels = { 'definition': 'Definition', 'context': 'Context', 'why-it-matters': 'Why It Matters', 'related': 'Related' };
+    document.getElementById('modalTerm').textContent = term;
+    document.getElementById('modalType').textContent = typeLabels[type] || type;
+    document.getElementById('modalContent').textContent = content;
+    document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+init();
+</script>
+</body>
+</html>
